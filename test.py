@@ -1,2 +1,5 @@
-import pygta,random
-pygta.player.set_money(-100000000)
+from pygta import gta
+import pygta
+while True:
+    print(pygta.FourBytesToFloat(gta.Vehicle.GetVehicleMass()))
+    print(gta.Vehicle.SetVehicleMass(pygta.FloatToFourBytes(-50)))
