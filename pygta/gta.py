@@ -173,8 +173,10 @@ class Game:
     def SetIsGameFreezed(value):
         return wmem(0xB7CB49,value)
     
-    def GetCurrentMenuId():
-        return FourBytesToSingleByte(rmem(0xBA6748+0x15D))
+    #def GetCurrentMenuId():
+    #    return FourBytesToSingleByte(rmem(0xBA6748+0x15D))
+    #def SetCurrentMenuId(value):
+    #    return 
 
 class Vehicle:
     def GetVehicleMass():
