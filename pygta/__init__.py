@@ -21,6 +21,12 @@ def wmem(address,value,offsets=[]):
     result=process.read(pointer)
     process.close()
     return result
+def rmem(address,offsets=[]):
+    #print(getpid())
+    process=rwm.get_process_by_id(getpid())
+    process.open()
+    pointer=process.get_pointer(address,offsets=offsets)
+    return process.read(pointer)
 
 def FourBytesToFloat(bytes):
     data_bytes = struct.pack('<I', bytes)
@@ -31,9 +37,15 @@ def FourBytesToFloat(bytes):
 def FloatToFourBytes(float):
     return struct.unpack('<I', struct.pack('<f', float))[0]
 
-def rmem(address,offsets=[]):
-    #print(getpid())
-    process=rwm.get_process_by_id(getpid())
-    process.open()
-    pointer=process.get_pointer(address,offsets=offsets)
-    return process.read(pointer)
+def FourBytesToSingleByte(bytes):
+    return bytes % 256
+    
+def FourBytesToString(bytes):
+    bytes_data = struct.pack('i', bytes)
+    return bytes_data.decode('utf-8')
+    
+def StringToFourBytes(string):
+    bytes_data = string.encode('utf-8')
+    numeric_value = struct.unpack('i', bytes_data)[0]
+    return numeric_value
+

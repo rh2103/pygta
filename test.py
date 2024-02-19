@@ -1,5 +1,5 @@
 from pygta import gta
-import pygta
+import pygta,random,time
+counter=0
 while True:
-    print(pygta.FourBytesToFloat(gta.Vehicle.GetVehicleMass()))
-    print(gta.Vehicle.SetVehicleMass(pygta.FloatToFourBytes(-50)))
+    print(pygta.wmem(0xBA18FC,1,[0x584]))
