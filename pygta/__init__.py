@@ -1,4 +1,4 @@
-import ctypes, win32gui, win32process,struct
+import ctypes, win32gui, win32process,struct,win32gui,win32process
 from ctypes import wintypes
 from ReadWriteMemory import ReadWriteMemory
 
@@ -13,6 +13,12 @@ def getpid():
 
     pid = win32process.GetWindowThreadProcessId(hwnd)[1]
     return pid
+def isfocused():
+    hwnd = win32gui.GetForegroundWindow()
+    _, pid = win32process.GetWindowThreadProcessId(hwnd)
+    if pid==getpid():
+        return True
+    return False
 def wmem(address,value,offsets=[]):
     process=rwm.get_process_by_id(getpid())
     process.open()
@@ -41,11 +47,11 @@ def FourBytesToSingleByte(bytes):
     return bytes % 256
     
 def FourBytesToString(bytes):
-    bytes_data = struct.pack('i', bytes)
+    bytes_data = struct.pack('d', bytes)
     return bytes_data.decode('utf-8')
     
-def StringToFourBytes(string):
-    bytes_data = string.encode('utf-8')
-    numeric_value = struct.unpack('i', bytes_data)[0]
-    return numeric_value
+#def StringToFourBytes(string):
+#    bytes_data = string.encode('utf-8')
+#    numeric_value = struct.unpack('i', bytes_data)[0]
+#    return numeric_value
 
