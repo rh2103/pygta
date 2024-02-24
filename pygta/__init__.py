@@ -1,10 +1,9 @@
-import ctypes, win32gui, win32process,struct,win32gui,win32process
+import ctypes, win32gui, win32process,struct,win32gui,win32process,time
 from ctypes import wintypes
 from ReadWriteMemory import ReadWriteMemory
 
 PROCESS_ALL_ACCESS = 0x1F0FFF
 rwm=ReadWriteMemory()
-
 def getpid():
     window_title='GTA: San Andreas'
     hwnd = win32gui.FindWindow(None, window_title)
@@ -55,3 +54,4 @@ def FourBytesToString(bytes):
 #    numeric_value = struct.unpack('i', bytes_data)[0]
 #    return numeric_value
 
+import pygta.gta as GTA

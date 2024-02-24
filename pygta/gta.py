@@ -135,7 +135,25 @@ class Player:
         return rmem(0xBAA420)
     def SetWantedLevel(value):
         return wmem(0xBAA420,value)
+
+    def GetPosition():
+        x=FourBytesToFloat(rmem(0xB6F5F0,offsets=[0x14,0x30]))
+        y=FourBytesToFloat(rmem(0xB6F5F0,offsets=[0x14,0x30+0x4]))
+        z=FourBytesToFloat(rmem(0xB6F5F0,offsets=[0x14,0x30+0x8]))
+        return [x,y,z]
+    def SetPosition(value:list):
+        x=wmem(0xB6F5F0,FloatToFourBytes(value[0]),offsets=[0x14,0x30])
+        y=wmem(0xB6F5F0,FloatToFourBytes(value[1]),offsets=[0x14,0x30+0x4])
+        z=wmem(0xB6F5F0,FloatToFourBytes(value[2]),offsets=[0x14,0x30+0x8])
+        return Player.GetPosition()
     
+    def GetHealth():
+        return FourBytesToFloat(rmem(0xB6F5F0,offsets=[0x540]))
+    def SetHealth(value):
+        return wmem(0xB6F5F0,FloatToFourBytes(value),[0x540])
+    
+    def OnVehicle():
+        return rmem(0xBA18FC)
 
 class Game:
     def GetGravity():
@@ -172,11 +190,6 @@ class Game:
         return rmem(0xB7CB49)
     def SetIsGameFreezed(value):
         return wmem(0xB7CB49,value)
-    
-    #def GetCurrentMenuId():
-    #    return FourBytesToSingleByte(rmem(0xBA6748+0x15D))
-    #def SetCurrentMenuId(value):
-    #    return 
 
 class Vehicle:
     def GetVehicleMass():
