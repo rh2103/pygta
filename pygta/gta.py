@@ -135,6 +135,9 @@ class Player:
         return rmem(0xBAA420)
     def SetWantedLevel(value):
         return wmem(0xBAA420,value)
+    
+    def OnVehicle():
+        return rmem(0xBA18FC)
 
     def GetPosition():
         x=FourBytesToFloat(rmem(0xB6F5F0,offsets=[0x14,0x30]))
@@ -152,8 +155,79 @@ class Player:
     def SetHealth(value):
         return wmem(0xB6F5F0,FloatToFourBytes(value),[0x540])
     
-    def OnVehicle():
-        return rmem(0xBA18FC)
+    def GetAttackerPointer():
+        return GetPointer(0xB6F5F0,[0x764])
+    
+    def IsInvisble():
+        if FourBytesToSingleByte(rmem(0xB6F5F0,[0x474]))==2:
+            return True
+        return False
+    def SetIsInvisible(value:bool):
+        if value:
+            return wmem(0xB6F5F0,738198530,[0x474])
+        else:
+            return wmem(0xB6F5F0,738198528,[0x474])
+
+    def GetSurfacePhysics():
+        """
+        1 = Submerged In Water
+        2 = On Solid Surface
+        4 = Broken
+        8 = Unknown
+        16 = Unknown
+        32 = Don't Apply Speed
+        64 = Unknown
+        128 = Unknown
+        """
+        return FourBytesToSingleByte(rmem(0xB6F5F0,[0x40+0x1]))
+    def SetSurfacePhysics(value):
+        """
+        1 = Submerged In Water
+        2 = On Solid Surface
+        4 = Broken
+        8 = Unknown
+        16 = Unknown
+        32 = Don't Apply Speed
+        64 = Unknown
+        128 = Unknown
+        """
+        return wmem(0xB6F5F0,value,[0x40+0x1])
+
+class Ped:
+    def GetPosition(target=0xB6F5F0):
+        x=FourBytesToFloat(rmem(target,offsets=[0x14,0x30]))
+        y=FourBytesToFloat(rmem(target,offsets=[0x14,0x30+0x4]))
+        z=FourBytesToFloat(rmem(target,offsets=[0x14,0x30+0x8]))
+        return [x,y,z]
+    def SetPosition(value:list,target=0xB6F5F0):
+        x=wmem(target,FloatToFourBytes(value[0]),offsets=[0x14,0x30])
+        y=wmem(target,FloatToFourBytes(value[1]),offsets=[0x14,0x30+0x4])
+        z=wmem(target,FloatToFourBytes(value[2]),offsets=[0x14,0x30+0x8])
+        return Player.GetPosition()
+    
+    def GetX(target=0xB6F5F0):
+        return FourBytesToFloat(rmem(target,offsets=[0x14,0x30]))
+    def SetX(value,target=0xB6F5F0):
+        return wmem(target,FloatToFourBytes(value),offsets=[0x14,0x30])
+
+    def GetY(target=0xB6F5F0):
+        return FourBytesToFloat(rmem(target,offsets=[0x14,0x30+0x4]))
+    def SetY(value,target=0xB6F5F0):
+        return wmem(target,FloatToFourBytes(value),offsets=[0x14,0x30+0x4])
+
+    def GetZ(target=0xB6F5F0):
+        return FourBytesToFloat(rmem(target,offsets=[0x14,0x30+0x8]))
+    def SetZ(value,target=0xB6F5F0):
+        return wmem(target,FloatToFourBytes(value),offsets=[0x14,0x30+0x8])
+
+    def GetHealth(target=0xB6F5F0):
+        return FourBytesToFloat(rmem(target,offsets=[0x540]))
+    def SetHealth(value,target=0xB6F5F0):
+        return wmem(target,FloatToFourBytes(value),[0x540])
+
+    def GetAttackerPointer(target=0xB6F5F0):
+        return GetPointer(target,[0x764])
+
 
 class Game:
     def GetGravity():
