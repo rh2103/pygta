@@ -33,6 +33,11 @@ def rmem(address,offsets=[]):
     pointer=process.get_pointer(address,offsets=offsets)
     return process.read(pointer)
 
+def GetPointer(address,offsets):
+    process=rwm.get_process_by_id(getpid())
+    process.open()
+    return process.get_pointer(address,offsets=offsets)
+
 def FourBytesToFloat(bytes):
     data_bytes = struct.pack('<I', bytes)
 
