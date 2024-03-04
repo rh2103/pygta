@@ -1,10 +1,11 @@
 from pygta import *
-import win32api,json,os
+import win32api,json,os,threading
 
 print('Enjoy modding! Read more about GTA SA memory: https://gtamods.com/wiki/Memory_Addresses_(SA)')
 
 DEFAULT_GRAVITY=0.00800000038
 DEFAULT_GAME_SPEED=1
+PLAYER_ADDRESS=0xB6F5F0
 KEY={
     "Backspace": "0x08",
     "Tab": "0x09",
@@ -110,6 +111,16 @@ def KeyPressed(vkey):
         return False
     return False
 
+def TestCheat(cheat='test'):
+    last_chars=''
+    for i in range(0,17):
+        last_chars=last_chars+(chr(FourBytesToSingleByte(rmem(0x969110+i))))
+    last_chars=last_chars[:len(cheat)]
+    last_chars=last_chars[::-1]
+    if cheat.lower()==last_chars.lower():
+        return True
+    return False
+
 class Player:
     def GetMoney():
         return rmem(0xB7CE50)
@@ -138,60 +149,60 @@ class Player:
     
     def OnVehicle():
         return rmem(0xBA18FC)
-
-    def GetPosition():
-        x=FourBytesToFloat(rmem(0xB6F5F0,offsets=[0x14,0x30]))
-        y=FourBytesToFloat(rmem(0xB6F5F0,offsets=[0x14,0x30+0x4]))
-        z=FourBytesToFloat(rmem(0xB6F5F0,offsets=[0x14,0x30+0x8]))
-        return [x,y,z]
-    def SetPosition(value:list):
-        x=wmem(0xB6F5F0,FloatToFourBytes(value[0]),offsets=[0x14,0x30])
-        y=wmem(0xB6F5F0,FloatToFourBytes(value[1]),offsets=[0x14,0x30+0x4])
-        z=wmem(0xB6F5F0,FloatToFourBytes(value[2]),offsets=[0x14,0x30+0x8])
-        return Player.GetPosition()
-    
-    def GetHealth():
-        return FourBytesToFloat(rmem(0xB6F5F0,offsets=[0x540]))
-    def SetHealth(value):
-        return wmem(0xB6F5F0,FloatToFourBytes(value),[0x540])
-    
-    def GetAttackerPointer():
-        return GetPointer(0xB6F5F0,[0x764])
-    
-    def IsInvisble():
-        if FourBytesToSingleByte(rmem(0xB6F5F0,[0x474]))==2:
-            return True
-        return False
-    def SetIsInvisible(value:bool):
-        if value:
-            return wmem(0xB6F5F0,738198530,[0x474])
-        else:
-            return wmem(0xB6F5F0,738198528,[0x474])
-
-    def GetSurfacePhysics():
-        """
-        1 = Submerged In Water
-        2 = On Solid Surface
-        4 = Broken
-        8 = Unknown
-        16 = Unknown
-        32 = Don't Apply Speed
-        64 = Unknown
-        128 = Unknown
-        """
-        return FourBytesToSingleByte(rmem(0xB6F5F0,[0x40+0x1]))
-    def SetSurfacePhysics(value):
-        """
-        1 = Submerged In Water
-        2 = On Solid Surface
-        4 = Broken
-        8 = Unknown
-        16 = Unknown
-        32 = Don't Apply Speed
-        64 = Unknown
-        128 = Unknown
-        """
-        return wmem(0xB6F5F0,value,[0x40+0x1])
+#
+    #def GetPosition():
+    #    x=FourBytesToFloat(rmem(0xB6F5F0,offsets=[0x14,0x30]))
+    #    y=FourBytesToFloat(rmem(0xB6F5F0,offsets=[0x14,0x30+0x4]))
+    #    z=FourBytesToFloat(rmem(0xB6F5F0,offsets=[0x14,0x30+0x8]))
+    #    return [x,y,z]
+    #def SetPosition(value:list):
+    #    x=wmem(0xB6F5F0,FloatToFourBytes(value[0]),offsets=[0x14,0x30])
+    #    y=wmem(0xB6F5F0,FloatToFourBytes(value[1]),offsets=[0x14,0x30+0x4])
+    #    z=wmem(0xB6F5F0,FloatToFourBytes(value[2]),offsets=[0x14,0x30+0x8])
+    #    return Player.GetPosition()
+    #
+    #def GetHealth():
+    #    return FourBytesToFloat(rmem(0xB6F5F0,offsets=[0x540]))
+    #def SetHealth(value):
+    #    return wmem(0xB6F5F0,FloatToFourBytes(value),[0x540])
+    #
+    #def GetAttackerPointer():
+    #    return GetPointer(0xB6F5F0,[0x764])
+    #
+    #def IsInvisble():
+    #    if FourBytesToSingleByte(rmem(0xB6F5F0,[0x474]))==2:
+    #        return True
+    #    return False
+    #def SetIsInvisible(value:bool):
+    #    if value:
+    #        return wmem(0xB6F5F0,738198530,[0x474])
+    #    else:
+    #        return wmem(0xB6F5F0,738198528,[0x474])
+#
+    #def GetSurfacePhysics():
+    #    """
+    #    1 = Submerged In Water
+    #    2 = On Solid Surface
+    #    4 = Broken
+    #    8 = Unknown
+    #    16 = Unknown
+    #    32 = Don't Apply Speed
+    #    64 = Unknown
+    #    128 = Unknown
+    #    """
+    #    return FourBytesToSingleByte(rmem(0xB6F5F0,[0x40+0x1]))
+    #def SetSurfacePhysics(value):
+    #    """
+    #    1 = Submerged In Water
+    #    2 = On Solid Surface
+    #    4 = Broken
+    #    8 = Unknown
+    #    16 = Unknown
+    #    32 = Don't Apply Speed
+    #    64 = Unknown
+    #    128 = Unknown
+    #    """
+    #    return wmem(0xB6F5F0,value,[0x40+0x1])
 
 class Ped:
     def GetPosition(target=0xB6F5F0):
@@ -203,7 +214,7 @@ class Ped:
         x=wmem(target,FloatToFourBytes(value[0]),offsets=[0x14,0x30])
         y=wmem(target,FloatToFourBytes(value[1]),offsets=[0x14,0x30+0x4])
         z=wmem(target,FloatToFourBytes(value[2]),offsets=[0x14,0x30+0x8])
-        return Player.GetPosition()
+        return Ped.GetPosition()
     
     def GetX(target=0xB6F5F0):
         return FourBytesToFloat(rmem(target,offsets=[0x14,0x30]))
@@ -224,11 +235,116 @@ class Ped:
         return FourBytesToFloat(rmem(target,offsets=[0x540]))
     def SetHealth(value,target=0xB6F5F0):
         return wmem(target,FloatToFourBytes(value),[0x540])
+    
+    def GetArmor(target=0xB6F5F0):
+        return FourBytesToFloat(rmem(target,offsets=[0x548]))
+    def SetArmor(value,target=0xB6F5F0):
+        return wmem(target,FloatToFourBytes(value),[0x548])
 
     def GetAttackerPointer(target=0xB6F5F0):
         return GetPointer(target,[0x764])
 
+    def GetCurrentVehiclePointer(target=0xB6F5F0):
+        return GetPointer(target,[0x58C])
+    
+    def GetHealth(target=0xB6F5F0):
+        return FourBytesToFloat(rmem(target,offsets=[0x540]))
+    def SetHealth(value,target=0xB6F5F0):
+        return wmem(target,FloatToFourBytes(value),[0x540])
+        #
+    def GetAttackerPointer(target=0xB6F5F0):
+        return GetPointer(target,[0x764])
+        #
+    def IsInvisble(target=0xB6F5F0):
+        if FourBytesToSingleByte(rmem(target,[0x474]))==2:
+            return True
+        return False
+    def SetIsInvisible(value:bool,target=0xB6F5F0):
+        if value:
+            return wmem(target,738198530,[0x474])
+        else:
+            return wmem(target,738198528,[0x474])
+    def GetSurfacePhysics(target=0xB6F5F0):
+        """
+        1 = Submerged In Water
+        2 = On Solid Surface
+        4 = Broken
+        8 = Unknown
+        16 = Unknown
+        32 = Don't Apply Speed
+        64 = Unknown
+        128 = Unknown
+        """
+        return FourBytesToSingleByte(rmem(target,[0x40+0x1]))
+    def SetSurfacePhysics(value,target=0xB6F5F0):
+        """
+        1 = Submerged In Water
+        2 = On Solid Surface
+        4 = Broken
+        8 = Unknown
+        16 = Unknown
+        32 = Don't Apply Speed
+        64 = Unknown
+        128 = Unknown
+        """
+        return wmem(target,value,[0x40+0x1])
+    
+    def GetSpecialPhysicsFlags(target=0xB6F5F0):
+        """
+        1 = Soft (in other words noclip)
+        2 = Freeze
+        4 = Bullet-Proof
+        8 = Fire-Proof
+        16 = Collision-Proof (prevent fall damage)
+        32 = Melee-Proof
+        64 = Melee-Proof, Bullet-Proof, Collision-Proof
+        128 = Explosion-Proof
+        """
+        return rmem(target,[0x40+0x2])
+    def SetSpecialPhysicsFlags(value,target=0xB6F5F0):
+        """
+        1 = Soft (in other words noclip)
+        2 = Freeze
+        4 = Bullet-Proof
+        8 = Fire-Proof
+        16 = Collision-Proof (prevent fall damage)
+        32 = Melee-Proof
+        64 = Melee-Proof, Bullet-Proof, Collision-Proof
+        128 = Explosion-Proof
+        """
+        return wmem(target,value,[0x40+0x2])
 
+    def GetAimedPedPointer(target=0xB6F5F0):
+        return GetPointer(target,[0x79C])
+    
+    def GetNearestVehiclePointer(target=0xB6F5F0):
+        return GetPointer(target,[0x47C,0x120])
+    
+    def GetState(target=0xB6F5F0):
+        """
+        0 = leaving a car, falling down from a bike or something like this
+        1 = normal case
+        50 = driving
+        55 = wasted
+        63 = busted
+        """
+        return FourBytesToSingleByte(rmem(target,[0x530]))
+    def SetState(value,target=0xB6F5F0):
+        """
+        0 = leaving a car, falling down from a bike or something like this
+        1 = normal case
+        50 = driving
+        55 = wasted
+        63 = busted
+        """
+        return rmem(target,value,[0x530])
+    
+    def InDistance(position_x,position_y,distance,target=0xB6F5F0):
+        ped_pos=Ped.GetPosition(target)
+        if ped_pos[0]<=position_x+distance and ped_pos[0]>=position_x-distance:
+            if ped_pos[1]<=position_y+distance and ped_pos[1]>=position_y-distance:
+                return True
+        return False
 class Game:
     def GetGravity():
         return FourBytesToFloat(rmem(0x863984))
@@ -264,19 +380,99 @@ class Game:
         return rmem(0xB7CB49)
     def SetIsGameFreezed(value):
         return wmem(0xB7CB49,value)
+    
+    def ShowTextbox(value):
+        if len(value)!=0:
+            text=list(value)
+            text=[ord(char) for char in text]
+            if len(text) > 150:
+                for _ in range(len(text) - 150):
+                    text.pop()
+            for index,i in enumerate(text):
+                wmem(0xBAA7A0+index,i)
+            return True
+        else:
+            for i in range(0,151):
+                wmem(0xBAA7A0+i,0)
+
+    def ShowMissionPassed(value='MISSION PASSED!'):
+        text=list(value)
+        text=[ord(char) for char in text]
+        if len(text) > 32:
+            for _ in range(len(text) - 150):
+                text.pop()
+        for index,i in enumerate(text):
+            wmem(0xBAACC0+index,i)
+        return True
+    def ShowMissionTitle(value='Mission Title'):
+        text=list(value)
+        text=[ord(char) for char in text]
+        if len(text) > 32:
+            for _ in range(len(text) - 150):
+                text.pop()
+        start_time=time.time()
+        for j in range(80):
+            for index,i in enumerate(text):
+                wmem(0xBAAD40+index,i)
+        print(start_time-time.time())
+        return True
 
 class Vehicle:
-    def GetVehicleMass():
-        return FourBytesToFloat(rmem(0xB6F980,offsets=[0x8C]))
-    def SetVehicleMass(value):
-        return wmem(0xB6F980,FloatToFourBytes(value),offsets=[0x8C])
+    def GetVehicleMass(target=0xBA18FC):
+        return FourBytesToFloat(rmem(target,offsets=[0x8C]))
+    def SetVehicleMass(value,target=0xBA18FC):
+        return wmem(target,FloatToFourBytes(value),offsets=[0x8C])
     
-    def GetCameraViewMode():
+    def GetCameraViewMode(target=0xBA18FC):
         return rmem(0xB6F0DC)
-    def SetCameraViewMode(value):
+    def SetCameraViewMode(value,target=0xBA18FC):
         return wmem(0xB6F0DC,value)
         
-    def GetDirtyLevel():
-        return FourBytesToFloat(rmem(0xBA18FC ,offsets=[0x4B0]))
-    def SetDirtyLevel(value):
-        return FourBytesToFloat(wmem(0xBA18FC ,FloatToFourBytes(value),offsets=[0x4B0]))
+    def GetDirtyLevel(target=0xBA18FC):
+        return FourBytesToFloat(rmem(target ,offsets=[0x4B0]))
+    def SetDirtyLevel(value,target=0xBA18FC):
+        return FourBytesToFloat(wmem(target ,FloatToFourBytes(value),offsets=[0x4B0]))
+    
+    def GetGripDivider(target=0xBA18FC):
+        return FourBytesToFloat(rmem(target,[0x94]))
+    def SetGripDivider(value,target=0xBA18FC):
+        return wmem(target,FloatToFourBytes(value),[0x94])
+    
+    def GetEngineState(target=0xBA18FC):
+        return FourBytesToSingleByte(rmem(target,[0x428]))
+    def SetEngineState(value,target=0xBA18FC):
+        if value:
+            return wmem(target,16,[0x428])
+        return wmem(target,0,[0x428])
+    
+    def GetTiresSize(target=0xBA18FC):
+        return FourBytesToFloat(rmem(target,[0x458]))
+    def SetTiresSize(value,target=0xBA18FC):
+        return wmem(target,FloatToFourBytes(value),[0x458])
+    
+    def GetDriverPointer(target=0xBA18FC):
+        return GetPointer(target,[0x460])
+    
+    def GetPosition(target=0xBA18FC):
+        x=FourBytesToFloat(rmem(target,offsets=[0x14,0x30]))
+        y=FourBytesToFloat(rmem(target,offsets=[0x14,0x30+0x4]))
+        z=FourBytesToFloat(rmem(target,offsets=[0x14,0x30+0x8]))
+        return [x,y,z]
+    def SetPosition(value:list,target=0xBA18FC):
+        x=wmem(target,FloatToFourBytes(value[0]),offsets=[0x14,0x30])
+        y=wmem(target,FloatToFourBytes(value[1]),offsets=[0x14,0x30+0x4])
+        z=wmem(target,FloatToFourBytes(value[2]),offsets=[0x14,0x30+0x8])
+        return Vehicle.GetPosition(target)
+
+    def GetX(target=0xBA18FC):
+        return FourBytesToFloat(rmem(target,offsets=[0x14,0x30]))
+    def SetX(value,target=0xBA18FC):
+        return wmem(target,FloatToFourBytes(value),offsets=[0x14,0x30])
+    def GetY(target=0xBA18FC):
+        return FourBytesToFloat(rmem(target,offsets=[0x14,0x30+0x4]))
+    def SetY(value,target=0xBA18FC):
+        return wmem(target,FloatToFourBytes(value),offsets=[0x14,0x30+0x4])
+    def GetZ(target=0xBA18FC):
+        return FourBytesToFloat(rmem(target,offsets=[0x14,0x30+0x8]))
+    def SetZ(value,target=0xBA18FC):
+        return wmem(target,FloatToFourBytes(value),offsets=[0x14,0x30+0x8])
