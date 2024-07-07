@@ -84,6 +84,12 @@ Vehicle
 - Set/get Mass
 - Set/get Camera view mode
 - Set/get Dirty level
+- Set/get Grip divider
+- Set/get Engine state
+- Set/get Tires size
+- Get Driver (pointer)
+- Set/get Position
+- Accelerate (Not complete yet)
 
 Others
 
