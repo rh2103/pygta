@@ -190,7 +190,7 @@ def ShowMissionTitle(value='Mission Title'):
     for i in range(80):
         WriteStr(0xBAAD40,value,32)
 
-def ShowSubtitle(value:str,duration=5):
+def ActivateSubtitle():
     addr=0x00588FA9
     if len(subtitleCode)==0:
         for i in range(6):
@@ -198,20 +198,29 @@ def ShowSubtitle(value:str,duration=5):
     #startVal=subtitleCode[0]-(subtitleCode[0]%256)
     for i in range(6):
         WriteMem(addr+i,  (subtitleCode[i]-(subtitleCode[i]%256) + 0x90))
+
+def ShowSubtitle(value:str,duration=5):
+    #addr=0x00588FA9
+    #if len(subtitleCode)==0:
+    #    for i in range(6):
+    #        subtitleCode.append(ReadMem(addr+i))
+    ##startVal=subtitleCode[0]-(subtitleCode[0]%256)
+    #for i in range(6):
+    #    WriteMem(addr+i,  (subtitleCode[i]-(subtitleCode[i]%256) + 0x90))
     #print(subtitleCode)
     #return
-    #WriteStr(0xBAB040,'',96)
+    WriteStr(0xBAB040,'',96)
     WriteStr(0xBAB040,value,96)
     #return
-    def timer():
-        time.sleep(duration)
-        for i in range(6):
-            WriteMem(addr+i,subtitleCode[i])
-            #print(subtitleCode[i])
-        #return
-    timerThread=threading.Thread(target=timer)
-    timerThread.start()
-    timerThread.join()
+    #def timer():
+    #    time.sleep(duration)
+    #    for i in range(6):
+    #        WriteMem(addr+i,subtitleCode[i])
+    #        #print(subtitleCode[i])
+    #    #return
+    #timerThread=threading.Thread(target=timer)
+    #timerThread.start()
+    #timerThread.join()
     return True
 
 def ShowDialogue(value:list):
@@ -767,8 +776,7 @@ class Menu:
         return ReadOneByte(0xBA6748+0x15F)
     
     def SetSelectedSaveGame(value:int):
-        return WriteOneByte(0xBA6748+0x15F,value)
-    
+        return WriteOneByte(0xBA6748+0x15F,value)   
 class Settings:
     def GetCanCameraMove():
         if ReadMem(0xB6EC1C,type='f')==0:
@@ -858,6 +866,11 @@ class Settings:
         def SetHUDMode(value):
             return WriteOneByte(0xBA6769,value)
 class Vehicle:
+    def GetHealth(target=0xBA18FC):
+        return ReadMem(target,[0x4C0],'f')
+    def SetHealth(value,target=0xBA18FC):
+        return WriteMem(target,value,[0x4C0],'f')
+
     def GetVehicleMass(target=0xBA18FC):
         return ReadMem(target,[0x8C],'f')
     def SetVehicleMass(value,target=0xBA18FC):
@@ -903,6 +916,11 @@ class Vehicle:
         y=WriteMem(target,value[1],[0x14,0x30+0x4],'f')
         z=WriteMem(target,value[2],[0x14,0x30+0x8],'f')
         return Vehicle.GetPosition(target)
+    
+    def SetSurfacePhysicsFlag(value,target=0xBA18FC):
+        return WriteOneByte(target,value,[0x40+0x1])
+    def GetSurfacePhysicsFlag(target=0xBA18FC):
+        return ReadOneByte(target,[0x40+0x1])
 
     def GetX(target=0xBA18FC):
         return ReadMem(target,[0x14,0x30],'f')
@@ -956,4 +974,3 @@ class Locations:
     sanFierro=[-2022.945556640625, 143.93690490722656, 28.8359375]
     lasVenturas=[2027.4886474609375, 1000.4976806640625, 10.8203125]
     libertyCity=[-738.2490844726562, 482.49835205078125, 1371.703369140625]
-
